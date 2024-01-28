@@ -11,6 +11,7 @@ import { Pokemon, getPokemonDetails } from "@/app/api/pokeApi";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { storage } from "@/app/api/mmkv";
 
 const PokemonDetails = () => {
@@ -70,7 +71,10 @@ const PokemonDetails = () => {
     <>
       {data && (
         <>
-          <View style={[styles.card, { alignItems: "center" }]}>
+          <Animated.View
+            style={[styles.card, { alignItems: "center" }]}
+            entering={FadeIn.delay(200)}
+          >
             <Image
               source={{ uri: data.sprites.front_shiny }}
               style={{ width: 200, height: 200 }}
@@ -78,7 +82,7 @@ const PokemonDetails = () => {
             <Text style={styles.text}>
               #{data.id} {data.name}
             </Text>
-          </View>
+          </Animated.View>
           <View style={styles.card}>
             <Text style={{ fontSize: 20, fontWeight: "bold" }}>Stats:</Text>
             {data.stats.map((stat: any) => (
