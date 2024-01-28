@@ -16,7 +16,8 @@ const Layout = () => {
         },
       }}
     >
-      <Stack.Screen name="index" options={{ title: "Pokemon" }} />
+      <Stack.Screen name="index" options={{ title: "Pokémons" }} />
+      <Stack.Screen name="(pokemon)/[id]" options={{ title: "Loading..." }} />
     </Stack>
   );
 };

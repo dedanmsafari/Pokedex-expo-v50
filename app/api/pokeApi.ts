@@ -3,6 +3,14 @@ export type Pokemon = {
   name: string;
   url: string;
   image: string;
+  sprites?: any;
+  stats?: any;
+};
+
+export const getPokemonDetails = async (id: string): Promise<Pokemon> => {
+  const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+  const data = await response.json();
+  return data;
 };
 
 const getPokemon = async (limit = 150): Promise<Pokemon[]> => {
