@@ -11,9 +11,9 @@ import { Pokemon, getPokemonDetails } from "@/app/api/pokeApi";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useQuery } from "@tanstack/react-query";
 
 const PokemonDetails = () => {
-  const [pokemonDetails, setPokemonDetails] = useState<Pokemon>();
   const [isFavourite, setIsFavourite] = useState<boolean>(false);
 
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -41,13 +41,20 @@ const PokemonDetails = () => {
     setIsFavourite(!isFavourite);
   };
 
+  const { data, isLoading, isSuccess } = useQuery({
+    queryKey: ["getPokemon", id],
+    queryFn: () => getPokemonDetails(id),
+  });
+
+  {
+    isSuccess &&
+      navigation.setOptions({
+        title: data.name.charAt(0).toUpperCase() + data.name.slice(1),
+      });
+  }
+
   useEffect(() => {
     const load = async () => {
-      const details = await getPokemonDetails(id);
-      setPokemonDetails(details);
-      navigation.setOptions({
-        title: details.name.charAt(0).toUpperCase() + details.name.slice(1),
-      });
       const isFavourite = await AsyncStorage.getItem(`favourite- ${id}`);
       setIsFavourite(isFavourite === "true");
     };
@@ -56,27 +63,28 @@ const PokemonDetails = () => {
 
   return (
     <>
-      {pokemonDetails ? (
+      {data && (
         <>
           <View style={[styles.card, { alignItems: "center" }]}>
             <Image
-              source={{ uri: pokemonDetails.sprites.front_shiny }}
+              source={{ uri: data.sprites.front_shiny }}
               style={{ width: 200, height: 200 }}
             />
             <Text style={styles.text}>
-              #{pokemonDetails.id} {pokemonDetails.name}
+              #{data.id} {data.name}
             </Text>
           </View>
           <View style={styles.card}>
             <Text style={{ fontSize: 20, fontWeight: "bold" }}>Stats:</Text>
-            {pokemonDetails.stats.map((stat: any) => (
+            {data.stats.map((stat: any) => (
               <Text>
                 {stat.stat.name} : {stat.base_stat}
               </Text>
             ))}
           </View>
         </>
-      ) : (
+      )}
+      {isLoading && (
         <View
           style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
         >

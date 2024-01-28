@@ -5,27 +5,25 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import React from "react";
 import { Link, router } from "expo-router";
-import getPokemon, { Pokemon } from "@/app/api/pokeApi";
+import getPokemon from "@/app/api/pokeApi";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 
 const Index = () => {
-  const [pokemon, setPokemon] = React.useState<Pokemon[]>([]);
-
-  React.useEffect(() => {
-    const load = async () => {
-      const results = await getPokemon();
-      setPokemon(results);
-    };
-    load();
-  }, []);
+  const { data, isLoading } = useQuery({
+    queryKey: ["getPokemon"],
+    queryFn: () => getPokemon(),
+  });
 
   return (
     <View>
+      {isLoading && <ActivityIndicator color="#f4511e" />}
       <ScrollView>
-        {pokemon.map((p) => (
+        {data?.map((p) => (
           <Link key={p.id} href={`/(pokemon)/${p.id}`} asChild>
             <TouchableOpacity>
               <View style={styles.Item}>
