@@ -10,13 +10,23 @@ import React, { useEffect, useState } from "react";
 import { Pokemon, getPokemonDetails } from "@/app/api/pokeApi";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
+import { storage } from "@/app/api/mmkv";
 
 const PokemonDetails = () => {
-  const [isFavourite, setIsFavourite] = useState<boolean>(false);
-
   const { id } = useLocalSearchParams<{ id: string }>();
+  const [isFavourite, setIsFavourite] = useState<boolean>(
+    storage.getString(`favourite-${id}`) === "true"
+  );
+
+  // useEffect(() => {
+  //   const load = async () => {
+  //     const isFavourite = await AsyncStorage.getItem(`favourite- ${id}`);
+  //     setIsFavourite(isFavourite === "true");
+  //   };
+  //   load();
+  // }, [id]);
+
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -34,10 +44,12 @@ const PokemonDetails = () => {
   }, [isFavourite]);
 
   const toggleFavourite = async () => {
-    await AsyncStorage.setItem(
-      `favourite- ${id}`,
-      !isFavourite ? "true" : "false"
-    );
+    // await AsyncStorage.setItem(
+    //   `favourite- ${id}`,
+    //   !isFavourite ? "true" : "false"
+    // );
+
+    storage.set(`favourite-${id}`, !isFavourite ? "true" : "false");
     setIsFavourite(!isFavourite);
   };
 
@@ -46,20 +58,13 @@ const PokemonDetails = () => {
     queryFn: () => getPokemonDetails(id),
   });
 
-  {
-    isSuccess &&
+  useEffect(() => {
+    if (isSuccess) {
       navigation.setOptions({
         title: data.name.charAt(0).toUpperCase() + data.name.slice(1),
       });
-  }
-
-  useEffect(() => {
-    const load = async () => {
-      const isFavourite = await AsyncStorage.getItem(`favourite- ${id}`);
-      setIsFavourite(isFavourite === "true");
-    };
-    load();
-  }, [id]);
+    }
+  }, [isSuccess]);
 
   return (
     <>
@@ -77,7 +82,7 @@ const PokemonDetails = () => {
           <View style={styles.card}>
             <Text style={{ fontSize: 20, fontWeight: "bold" }}>Stats:</Text>
             {data.stats.map((stat: any) => (
-              <Text>
+              <Text key={stat.stat.name}>
                 {stat.stat.name} : {stat.base_stat}
               </Text>
             ))}

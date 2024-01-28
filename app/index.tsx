@@ -9,9 +9,10 @@ import {
 } from "react-native";
 import React from "react";
 import { Link, router } from "expo-router";
-import getPokemon from "@/app/api/pokeApi";
+import getPokemon, { Pokemon } from "@/app/api/pokeApi";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
+import { FlashList, ListRenderItem } from "@shopify/flash-list";
 
 const Index = () => {
   const { data, isLoading } = useQuery({
@@ -19,26 +20,26 @@ const Index = () => {
     queryFn: () => getPokemon(),
   });
 
+  const renderItem: ListRenderItem<Pokemon> = ({ item }) => (
+    <Link key={item.id} href={`/(pokemon)/${item.id}`} asChild>
+      <TouchableOpacity>
+        <View style={styles.Item}>
+          <Image source={{ uri: item?.image }} style={styles.Image} />
+          <Text style={styles.Text}>{item.name}</Text>
+          <MaterialIcons
+            name="keyboard-arrow-right"
+            size={36}
+            color="#f4511e"
+          />
+        </View>
+      </TouchableOpacity>
+    </Link>
+  );
+
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       {isLoading && <ActivityIndicator color="#f4511e" />}
-      <ScrollView>
-        {data?.map((p) => (
-          <Link key={p.id} href={`/(pokemon)/${p.id}`} asChild>
-            <TouchableOpacity>
-              <View style={styles.Item}>
-                <Image source={{ uri: p.image }} style={styles.Image} />
-                <Text style={styles.Text}>{p.name}</Text>
-                <MaterialIcons
-                  name="keyboard-arrow-right"
-                  size={36}
-                  color="#f4511e"
-                />
-              </View>
-            </TouchableOpacity>
-          </Link>
-        ))}
-      </ScrollView>
+      <FlashList data={data} renderItem={renderItem} estimatedItemSize={100} />
     </View>
   );
 };
