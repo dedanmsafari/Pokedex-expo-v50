@@ -21,6 +21,7 @@ import Animated, {
 const Favourites = () => {
   const [keys, setKeys] = useState(storage.getAllKeys());
   const [data, setData] = useState<Pokemon[]>([]);
+
   const pokemonQueries = useQueries({
     queries: keys.map((key) => {
       const pokeId = key.split("-")[1];
@@ -31,14 +32,14 @@ const Favourites = () => {
     }),
   });
 
-  const allFinished = pokemonQueries.map((p) => p.isSuccess);
+  const allFinished = pokemonQueries.every((p) => p.isSuccess);
 
   useEffect(() => {
     if (allFinished) {
       const newData = pokemonQueries.map((p) => p.data!);
       setData(newData);
     }
-  }, []);
+  }, [allFinished]);
 
   const removeItem = (id: number) => {
     storage.delete(`favourite-${id}`);
@@ -48,20 +49,20 @@ const Favourites = () => {
   return (
     <ScrollView>
       {data.length > 0 &&
-        data?.map((item, index) => (
+        data.map((item, index) => (
           <Animated.View
             key={item.id}
             style={styles.Item}
-            layout={LinearTransition.delay(100)}
+            layout={LinearTransition.delay(100).springify()}
             entering={FadeIn.delay(100 * index)}
             exiting={SlideOutLeft.duration(200)}
           >
             <Image
-              source={{ uri: item?.sprites.front_shiny }}
+              source={{ uri: item.sprites.front_shiny }}
               style={styles.Image}
             />
-            <Text style={styles.Text}>{item?.name}</Text>
-            <TouchableOpacity onPress={() => removeItem(item?.id)}>
+            <Text style={styles.Text}>{item.name}</Text>
+            <TouchableOpacity onPress={() => removeItem(item.id)}>
               <FontAwesome name="trash-o" size={24} color="#c10505" />
             </TouchableOpacity>
           </Animated.View>
